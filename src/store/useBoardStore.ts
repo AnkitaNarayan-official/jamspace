@@ -9,6 +9,7 @@ export type Note = {
   width: number;
   height: number;
   isMinimized: boolean;
+  reactions?: Record<string, number>;
 };
 
 export type User = {
@@ -40,6 +41,7 @@ type BoardState = {
   
   setActivity: (activity: ActivityState | null) => void;
   deleteNote: (id: string) => void;
+  addReaction: (id: string, emoji: string) => void;
   clearNotes: () => void;
 };
 
@@ -53,6 +55,7 @@ const starterNotes: Note[] = [
     width: 290,
     height: 210,
     isMinimized: false,
+    reactions: {},
   },
   {
     id: "note-2",
@@ -63,6 +66,7 @@ const starterNotes: Note[] = [
     width: 300,
     height: 196,
     isMinimized: false,
+    reactions: {},
   },
 ];
 
@@ -94,6 +98,7 @@ export const useBoardStore = create<BoardState>()(persist((set) => ({
             width: DEFAULT_NOTE_SIZE.width,
             height: DEFAULT_NOTE_SIZE.height,
             isMinimized: false,
+            reactions: {},
           },
         ],
       };
@@ -129,6 +134,20 @@ export const useBoardStore = create<BoardState>()(persist((set) => ({
   deleteNote: (id) =>
     set((state) => ({
       notes: state.notes.filter((note) => note.id !== id),
+    })),
+  addReaction: (id, emoji) =>
+    set((state) => ({
+      notes: state.notes.map((note) => 
+        note.id === id
+          ? {
+              ...note,
+              reactions: {
+                ...note.reactions,
+                [emoji]: ((note.reactions || {})[emoji] || 0) + 1,
+              },
+            }
+          : note,
+      ),
     })),
   clearNotes: () => set({ notes: [], activity: null }),
 }),

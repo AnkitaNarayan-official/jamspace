@@ -81,6 +81,7 @@ function UserAvatar({ user }: { user: User }) {
 export default function App() {
   const [theme, setTheme] = useState<ThemeMode>("light");
   const [collapseMode, setCollapseMode] = useState<CollapseMode>("pill");
+  const [commandOpen, setCommandOpen] = useState(false);
   const [viewport, setViewport] = useState(() => ({
     width: window.innerWidth,
     height: window.innerHeight,
@@ -118,6 +119,39 @@ export default function App() {
   }, [theme]);
 
   useMultiplayer(viewport);
+  useEffect(() => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === "k") {
+      event.preventDefault();
+      setCommandOpen((prev) => !prev);
+    }
+
+    if (event.key === "Escape") {
+      setCommandOpen(false);
+    }
+    if (
+      event.key.toLowerCase() === "n" &&
+      !(event.target instanceof HTMLInputElement) &&
+      !(event.target instanceof HTMLTextAreaElement)
+    ) {
+      spawnNote("#DCAE96");
+    } 
+    if (
+      event.key.toLowerCase() === "t" &&
+      !(event.target instanceof HTMLInputElement) &&
+      !(event.target instanceof HTMLTextAreaElement)
+    ) {
+      setTheme((prev) => (prev === "light" ? "dark" : "light"));
+    }
+    if (event.key === "Escape") {
+      setCommandOpen(false);
+    }
+  };
+
+  window.addEventListener("keydown", handleKeyDown);
+
+  return () => window.removeEventListener("keydown", handleKeyDown);
+}, []);
 
   const boardStyle = useMemo<CSSProperties>(() => {
     const offsetX = (viewport.width - viewport.width * zoomScale) / 2;
@@ -176,6 +210,47 @@ export default function App() {
       className={`relative min-h-screen w-screen overflow-hidden ${backgroundClass}`}
       onWheel={handleWheel}
     >
+      {commandOpen && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/20 pt-32 backdrop-blur-sm" onClick={()=> setCommandOpen(false)}>
+          <div className="w-[500px] rounded-3xl border border-white/20 bg-white/15 p-4 text-white shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <input
+              autoFocus
+              placeholder="Type a command..."
+              className="w-full rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-white placeholder:text-white/50 outline-none"            />
+
+            <div className="mt-3 flex flex-col gap-2">
+              <button
+                className="rounded-xl px-4 py-3 text-left transition-colors hover:bg-white/10"                onClick={() => {
+                  spawnNote("#FFD166");
+                  setCommandOpen(false);
+                }}
+              >
+                ➕ Create Note
+              </button>
+
+              <button
+                className="rounded-xl px-4 py-3 text-left transition-colors hover:bg-white/10"
+                onClick={() => {
+                  setTheme(theme === "light" ? "dark" : "light");
+                  setCommandOpen(false);
+                }}
+              >
+                🌓 Toggle Theme
+              </button>
+
+              <button
+                className="rounded-xl px-4 py-3 text-left transition-colors hover:bg-white/10"
+                onClick={() => {
+                  clearNotes();
+                  setCommandOpen(false);
+                }}
+              >
+                🗑 Clear Board
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <FluidParticles theme={theme} />
 
       <div className={`fixed inset-0 z-10 ${overlayClass}`} style={overlayStyle} />

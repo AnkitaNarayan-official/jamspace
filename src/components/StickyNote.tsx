@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent } from "react";
 import { motion, useDragControls } from "framer-motion";
 import { Minus, Plus, Trash2, MoreVertical } from "lucide-react";
-import type { Note } from "@/store/useBoardStore";
+import { useBoardStore, type Note } from "@/store/useBoardStore";
 
 export type CollapseMode = "pill" | "fold";
 
@@ -74,11 +74,29 @@ export function StickyNote({
   const [collapseMotion, setCollapseMotion] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  const menuRef = useRef<HTMLDivElement>(null);
+  const addReaction = useBoardStore((state) => state.addReaction);
   useEffect(() => {
     setCollapseMotion(true);
     const timeout = window.setTimeout(() => setCollapseMotion(false), 180);
     return () => window.clearTimeout(timeout);
   }, [note.isMinimized]);
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        menuRef.current &&
+        !menuRef.current.contains(event.target as Node)
+      ) {
+        setMenuOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const collapsedSize = collapseMode === "pill" ? COLLAPSED_PILL : COLLAPSED_FOLD;
   const isCollapsed = note.isMinimized;
@@ -261,7 +279,7 @@ export function StickyNote({
                 <Trash2 className="h-4 w-4" strokeWidth={2.5} />
                 
               </button>
-              <div className="relative">
+              <div ref={menuRef} className="relative">
                   <button
                     type="button"
                     className="grid h-7 w-7 place-items-center rounded-full bg-white/35 text-slate-900/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.55),0_6px_14px_rgba(15,23,42,0.16)]"
@@ -277,22 +295,64 @@ export function StickyNote({
                     <div
                       className="absolute right-10 top-0 z-50 flex rounded-xl bg-white p-2 shadow-xl gap-1"
                     >
-                    <button className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100">
-                      🤩
+                      <button
+                        className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          addReaction(note.id, "🤩");
+                          setMenuOpen(false);
+                        }}
+                    >                      
+                    🤩
                     </button>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        addReaction(note.id, "👻");
+                        setMenuOpen(false);
+                      }}
+                    >
                       👻
                     </button>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        addReaction(note.id, "🚀");
+                        setMenuOpen(false);
+                      }}
+                    >
                       🚀
                     </button>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        addReaction(note.id, "❤️");
+                        setMenuOpen(false);
+                      }}
+                    >
                       ❤️
                     </button>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        addReaction(note.id, "🤙");
+                        setMenuOpen(false);
+                      }}
+                    >
                       🤙
                     </button>
-                    <button className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100">
+                    <button
+                      className="flex h-8 w-8 items-center justify-center rounded-lg transition hover:bg-slate-100"
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        addReaction(note.id, "🥸");
+                        setMenuOpen(false);
+                      }}
+                    >
                       🥸
                     </button>
                   </div>
@@ -310,6 +370,18 @@ export function StickyNote({
                 data-note-input="true"
                 onPointerDown={(event) => event.stopPropagation()}
               />
+              {note.reactions && Object.keys(note.reactions).length > 0 && (
+                <div className="absolute bottom-2 right-2 flex flex-wrap gap-1">
+                  {Object.entries(note.reactions).map(([emoji, count]) => (
+                    <button
+                      key={emoji}
+                      className="rounded-full bg-white/60 px-2 py-1 text-xs font-medium shadow-sm hover:bg-white/80"
+                    >
+                      {emoji} {count}
+                    </button>
+                  ))}
+                </div>
+              )}             
             </div>
 
             {!note.isMinimized && (
