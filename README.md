@@ -54,9 +54,14 @@ The application intentionally bypasses the React Context API for core canvas sta
 
 ```text
 src/
-├── components/          # UI components (StickyNote, CommandPalette, etc.)
-├── hooks/               # Custom React hooks (useMultiplayer, etc.)
-├── store/               # Zustand state definitions (useBoardStore.ts)
-├── utils/               # Helper functions and class mergers (cn.ts)
-├── App.tsx              # Master layout and layer assembly
-└── index.css            # Tailwind directives and global CSS
+├── components/
+│   ├── FluidParticles.tsx
+│   └── StickyNote.tsx
+├── hooks/
+│   └── useMultiplayer.ts
+├── store/
+│   └── useBoardStore.ts
+├── utils/
+|   └── cn.ts
+├── App.tsx
+└── main.tsx
